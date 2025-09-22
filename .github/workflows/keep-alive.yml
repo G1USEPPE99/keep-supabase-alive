@@ -1,0 +1,16 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # esegue una volta al giorno a mezzanotte UTC
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          curl -X GET "https://xuvcixexgbizfirkryvb.supabase.co" \
+          -H "apikey:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1dmNpeGV4Z2JpemZpcmtyeXZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MjU5NTQsImV4cCI6MjA2MDMwMTk1NH0.9WWHCNu08u_Id9MJy4z0q7pZ52Auw_Hs8HNCdRUyjdQ" \
+          -H "Authorization: Bearer YOUR_SUPABASE_ANON_KEY"
