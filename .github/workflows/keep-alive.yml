@@ -3,16 +3,14 @@ name: Keep Supabase Alive
 on:
   schedule:
     - cron: '0 0 * * *' # esegue una volta al giorno a mezzanotte UTC
-  workflow_dispatch:
+  workflow_dispatch: # permette di farlo partire manualmente
 
 jobs:
   keep-alive:
     runs-on: ubuntu-latest
     steps:
-     - name: Ping Supabase
-  run: |
-    curl -X POST "https://xuvcixexgbizfirkryvb.supabase.co/rest/v1/ping_log" \
-    -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-    -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
-    -H "Content-Type: application/json" \
-    -d '{"ping_time": "now()"}'
+      - name: Ping Supabase
+        run: |
+          curl -X GET "https://TUO_SUPABASE_URL/rest/v1/" \
+          -H "apikey: TUO_SUPABASE_ANON_KEY" \
+          -H "Authorization: Bearer TUO_SUPABASE_ANON_KEY"
