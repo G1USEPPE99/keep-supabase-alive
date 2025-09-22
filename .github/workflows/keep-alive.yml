@@ -9,8 +9,10 @@ jobs:
   keep-alive:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase
+      - name: Ping Supabase (INSERT in tabella)
         run: |
-          curl -X GET "https://xuvcixexgbizfirkryvb.supabase.co" \
-          -H "apikey:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1dmNpeGV4Z2JpemZpcmtyeXZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MjU5NTQsImV4cCI6MjA2MDMwMTk1NH0.9WWHCNu08u_Id9MJy4z0q7pZ52Auw_Hs8HNCdRUyjdQ" \
-          -H "Authorization: Bearer YOUR_SUPABASE_ANON_KEY"
+          curl -X POST "https://xuvcixexgbizfirkryvb.supabase.co/rest/v1/ping_log" \
+          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{"ping_time": "now()"}'
