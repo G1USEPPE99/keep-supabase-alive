@@ -2,7 +2,7 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * *' # ogni giorno a mezzanotte UTC
   workflow_dispatch:
 
 jobs:
@@ -12,17 +12,25 @@ jobs:
       - name: Ping Supabase
         id: ping
         run: |
+          # Calcola il timestamp UTC corrente
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          # Esegue il POST su ping_log con timestamp valido
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
             -X POST "https://xuvcixexgbizfirkryvb.supabase.co/rest/v1/ping_log" \
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{"ping_time": null}')
-          
+            -d "{\"ping_time\":\"$TIMESTAMP\"}")
+
+          # Mostra il risultato
           echo "HTTP status code: $RESPONSE"
-          
+
           if [ "$RESPONSE" -eq 201 ]; then
             echo "Ping registrato ✅"
           else
             echo "Ping fallito ❌"
-          fi
+            # Stampa il dettaglio per debug
+            curl -s -X POST "https://xuvcixexgbizfirkryvb.supabase.co/rest/v1/ping_log" \
+              -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
+              -H "Authorization
