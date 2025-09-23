@@ -1,4 +1,4 @@
-name: Keep Supabase Alive
+name: Ping Supabase to Prevent Pausing
 
 on:
   schedule:
@@ -6,31 +6,48 @@ on:
   workflow_dispatch:
 
 jobs:
-  keep-alive:
+  ping:
     runs-on: ubuntu-latest
+
     steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # Step 3: Install Supabase Client
+      - name: Install Supabase Client
+        run: npm install @supabase/supabase-js --force
+
+      # Step 4: Ping Supabase
       - name: Ping Supabase
-        id: ping
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.NEXT_SERVICE_ROLE_KEY }}
         run: |
-          # Calcola il timestamp UTC corrente
-          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          node -e "
+          (async () => {
+            try {
+              const { createClient } = require('@supabase/supabase-js');
+              const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-          # Esegue il POST su ping_log con timestamp valido
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X POST "https://xuvcixexgbizfirkryvb.supabase.co/rest/v1/ping_log" \
-            -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"ping_time\":\"$TIMESTAMP\"}")
+              // Inserisce un nuovo ping nella tabella ping_log
+              const { data, error } = await supabase
+                .from('ping_log')
+                .insert([{ ping_time: new Date().toISOString() }]);
 
-          # Mostra il risultato
-          echo "HTTP status code: $RESPONSE"
+              if (error) throw error;
 
-          if [ "$RESPONSE" -eq 201 ]; then
-            echo "Ping registrato ✅"
-          else
-            echo "Ping fallito ❌"
-            # Stampa il dettaglio per debug
-            curl -s -X POST "https://xuvcixexgbizfirkryvb.supabase.co/rest/v1/ping_log" \
-              -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
-              -H "Authorization
+              console.log('Ping registrato con successo ✅', data);
+            } catch (err) {
+              console.error('Errore ping Supabase ❌', err.message);
+              process.exit(1);
+            }
+          })();
+          "
+
