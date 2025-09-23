@@ -2,16 +2,25 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    - cron: '0 0 * * *' # esegue una volta al giorno a mezzanotte UTC
-  workflow_dispatch: # permette di farlo partire manualmente
+    - cron: '0 0 * * *' # ogni giorno a mezzanotte UTC
+  workflow_dispatch:
 
 jobs:
   keep-alive:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Supabase
+        id: ping
         run: |
-          curl -X GET "https://xuvcixexgbizfirkryvb.supabase.co/rest/v1/?select=1" \
-          -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
-          -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}" \
-          -H "Content-Type: application/json"
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "https://xuvcixexgbizfirkryvb.supabase.co/rest/v1/ping_log" \
+            -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"ping_time":"now()"}')
+          echo "HTTP status code: $RESPONSE"
+          if [ "$RESPONSE" -eq 201 ]; then
+            echo "Ping registrato ✅"
+          else
+            echo "Ping fallito ❌"
+          fi
