@@ -2,7 +2,7 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    - cron: '0 0 * * *' # ogni giorno a mezzanotte UTC
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 jobs:
@@ -12,24 +12,17 @@ jobs:
       - name: Ping Supabase
         id: ping
         run: |
-          # Effettua il POST nel database usando la service_role_key
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
             -X POST "https://xuvcixexgbizfirkryvb.supabase.co/rest/v1/ping_log" \
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{}')
-
+            -d '{"ping_time": null}')
+          
           echo "HTTP status code: $RESPONSE"
-
+          
           if [ "$RESPONSE" -eq 201 ]; then
             echo "Ping registrato ✅"
           else
             echo "Ping fallito ❌"
-            # Mostra anche il contenuto della risposta per debug
-            curl -s -X POST "https://xuvcixexgbizfirkryvb.supabase.co/rest/v1/ping_log" \
-              -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
-              -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}" \
-              -H "Content-Type: application/json" \
-              -d '{}' -v
           fi
