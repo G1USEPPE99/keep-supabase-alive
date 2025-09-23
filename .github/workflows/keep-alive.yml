@@ -17,10 +17,11 @@ jobs:
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{"ping_time":"now()"}')
+            -d '{}')
           echo "HTTP status code: $RESPONSE"
           if [ "$RESPONSE" -eq 201 ]; then
             echo "Ping registrato ✅"
           else
             echo "Ping fallito ❌"
           fi
+
